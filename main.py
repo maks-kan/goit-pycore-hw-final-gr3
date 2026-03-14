@@ -6,6 +6,30 @@ import shlex
 from cli.colors import ColorScheme, make_scheme
 from cli.commands import default_commands, handle_help, handle_quit
 
+
+class AddressBook:
+    """Stub — replace with real implementation."""
+
+    def __init__(self) -> None:
+        self._changed = False
+
+    def is_changed(self) -> bool:
+        return self._changed
+
+    def mark_saved(self) -> None:
+        self._changed = False
+
+
+class Storage:
+    """Stub — replace with real implementation."""
+
+    def load(self) -> AddressBook:
+        return AddressBook()
+
+    def save(self, book: AddressBook) -> None:
+        book.mark_saved()
+
+
 TITLE = "Assistant Bot"
 TEAM_NAME = "Team #3"
 TEAM_MEMBERS = [
@@ -45,6 +69,8 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     colors = make_scheme(no_color=args.no_color or "NO_COLOR" in os.environ)
+    storage = Storage()
+    book = storage.load()
     commands = default_commands(colors)
 
     print()
@@ -60,6 +86,8 @@ def main(argv: list[str] | None = None) -> None:
             user_input = input(">>> ").strip()
         except (EOFError, KeyboardInterrupt):
             print()
+            if book.is_changed():
+                storage.save(book)
             print(handle_quit(colors=colors))
             break
 
@@ -75,6 +103,8 @@ def main(argv: list[str] | None = None) -> None:
         cmd_name = parts[0].lower()
 
         if cmd_name in ("quit", "exit", "close"):
+            if book.is_changed():
+                storage.save(book)
             print(handle_quit(colors=colors))
             break
 
@@ -102,6 +132,9 @@ def main(argv: list[str] | None = None) -> None:
             continue
 
         print(f"\n{result}\n")
+
+        if book.is_changed():
+            storage.save(book)
 
 
 if __name__ == "__main__":
