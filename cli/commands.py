@@ -18,9 +18,9 @@ def command(help_text: str) -> Callable[[Callable], Callable]:
 @command("Show available commands.")
 def handle_help(commands: dict[str, Callable]) -> str:
     """Format and return a help listing of all registered commands."""
-    lines = []
+    lines = ["  Available commands:"]
     for name, handler in sorted(commands.items()):
-        lines.append(f"  {name:<15} {handler.__doc__}")
+        lines.append(f"    {name:<15} {handler.__doc__}")
     return "\n".join(lines)
 
 

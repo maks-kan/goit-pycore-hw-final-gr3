@@ -2,13 +2,45 @@ import shlex
 
 from cli.commands import default_commands, handle_help, handle_quit
 
+TITLE = "Assistant Bot"
+TEAM_NAME = "Team #3"
+TEAM_MEMBERS = [
+    "Olga Shadrunova",
+    "Maks Kaniuka",
+    "Ivan Bochkarov",
+    "Oleksandr Semychenkov",
+]
+
+
+def format_title(title: str) -> str:
+    """Format title in a Unicode box with shadow."""
+    width = len(title) + 4
+    return (
+        f"  ╔{'═' * width}╗\n"
+        f"  ║  {title}  ║░\n"
+        f"  ╚{'═' * width}╝░\n"
+        f"   {'░' * (width + 2)}"
+    )
+
+
+def format_team(name: str, members: list[str]) -> str:
+    """Format team block with members listed."""
+    lines = [f"  {name}:"]
+    for member in members:
+        lines.append(f"    ● {member}")
+    return "\n".join(lines)
+
 
 def main() -> None:
     commands = default_commands()
 
-    print("Assistant Bot — Team #3")
-    print("Olga Shadrunova, Maks Kaniuka, Ivan Bochkarov, Oleksandr Semychenkov")
+    print()
+    print(format_title(TITLE))
+    print()
+    print(format_team(TEAM_NAME, TEAM_MEMBERS))
+    print()
     print(handle_help(commands))
+    print()
 
     while True:
         try:

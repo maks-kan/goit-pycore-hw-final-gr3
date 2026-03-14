@@ -1,11 +1,26 @@
-from main import main
+from main import format_team, format_title, main
+
+
+def test_format_title_has_box_and_shadow() -> None:
+    result = format_title("Hello")
+    assert "╔" in result
+    assert "║  Hello  ║" in result
+    assert "╚" in result
+    assert "░" in result
+
+
+def test_format_team_lists_members() -> None:
+    result = format_team("Team X", ["Alice", "Bob"])
+    assert "Team X:" in result
+    assert "● Alice" in result
+    assert "● Bob" in result
 
 
 def test_quit_command(monkeypatch, capsys) -> None:
     monkeypatch.setattr("builtins.input", lambda _: "quit")
     main()
     output = capsys.readouterr().out
-    assert "Assistant Bot — Team #3" in output
+    assert "Assistant Bot" in output
     assert "Good bye!" in output
 
 
@@ -28,8 +43,7 @@ def test_help_then_quit(monkeypatch, capsys) -> None:
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     main()
     output = capsys.readouterr().out
-    # Help listing appears twice: on start and on "help" command
-    assert output.count("Show available commands.") == 2
+    assert output.count("Available commands:") == 2
 
 
 def test_unknown_command(monkeypatch, capsys) -> None:
@@ -76,11 +90,12 @@ def test_unmatched_quotes(monkeypatch, capsys) -> None:
     assert "Invalid input: unmatched quotes." in output
 
 
-def test_greeting_includes_help_listing(monkeypatch, capsys) -> None:
+def test_greeting_includes_all_sections(monkeypatch, capsys) -> None:
     monkeypatch.setattr("builtins.input", lambda _: "quit")
     main()
     output = capsys.readouterr().out
-    lines = output.split("\n")
-    assert lines[0] == "Assistant Bot — Team #3"
-    assert "help" in output
-    assert "quit" in output
+    assert "Assistant Bot" in output
+    assert "Team #3:" in output
+    assert "● Olga Shadrunova" in output
+    assert "● Oleksandr Semychenkov" in output
+    assert "Available commands:" in output

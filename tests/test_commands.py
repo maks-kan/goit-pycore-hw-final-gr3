@@ -31,6 +31,7 @@ def test_handle_quit_returns_farewell() -> None:
 def test_handle_help_lists_all_commands() -> None:
     commands = default_commands()
     result = handle_help(commands)
+    assert "Available commands:" in result
     assert "help" in result
     assert "quit" in result
     assert "Show available commands." in result
