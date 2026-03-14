@@ -1,13 +1,12 @@
 import argparse
-import difflib
 import os
-import shlex
 from collections.abc import Callable
 from functools import partial
 from typing import Any
 
 from cli.colors import ColorScheme, make_scheme
 from cli.commands import handle_echo, handle_greet, handle_help, handle_quit
+from cli.repl import run_repl
 
 
 class AddressBook:
@@ -127,60 +126,7 @@ def main(argv: list[str] | None = None) -> None:
     print(handle_help(commands, colors=colors))
     print()
 
-    while True:
-        try:
-            user_input = input(">>> ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print()
-            if book.is_changed():
-                storage.save(book)
-            print(handle_quit(colors=colors))
-            break
-
-        if not user_input:
-            continue
-
-        try:
-            parts = shlex.split(user_input)
-        except ValueError:
-            print(f"{colors.ERROR}Invalid input: unmatched quotes.{colors.RESET}")
-            continue
-
-        cmd_name = parts[0].lower()
-
-        if cmd_name in ("quit", "exit", "close"):
-            if book.is_changed():
-                storage.save(book)
-            print(handle_quit(colors=colors))
-            break
-
-        if cmd_name == "help":
-            print(f"\n{handle_help(commands, colors=colors)}\n")
-            continue
-
-        handler = commands.get(cmd_name)
-        if handler is None:
-            msg = f"Unknown command: {cmd_name}"
-            matches = difflib.get_close_matches(
-                cmd_name, commands.keys(), n=1, cutoff=0.6
-            )
-            if matches:
-                msg += f". Did you mean: {matches[0]}?"
-            print(f"{colors.ERROR}{msg}{colors.RESET}")
-            continue
-
-        try:
-            result = handler(*parts[1:])
-        except ValueError as exc:
-            print(f"\n  {colors.ERROR}Invalid input: {exc}{colors.RESET}")
-            usage = f"{cmd_name} — {handler.__doc__}"
-            print(f"  {colors.USAGE}Usage: {usage}{colors.RESET}\n")
-            continue
-
-        print(f"\n{result}\n")
-
-        if book.is_changed():
-            storage.save(book)
+    run_repl(commands, colors, book, storage)
 
 
 if __name__ == "__main__":
