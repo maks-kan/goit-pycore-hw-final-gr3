@@ -66,7 +66,7 @@ def main() -> None:
             break
 
         if cmd_name == "help":
-            print(handle_help(commands))
+            print(f"\n{handle_help(commands)}\n")
             continue
 
         handler = commands.get(cmd_name)
@@ -74,7 +74,7 @@ def main() -> None:
             print(f"Unknown command: {cmd_name}")
             continue
 
-        print(handler(*parts[1:]))
+        print(f"\n{handler(*parts[1:])}\n")
 
 
 if __name__ == "__main__":
