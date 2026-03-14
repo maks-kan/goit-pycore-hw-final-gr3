@@ -19,6 +19,7 @@ class ColorScheme:
     USAGE: str
     GREETING: str
     FAREWELL: str
+    ROLE: str
 
 
 _COLORED = ColorScheme(
@@ -34,6 +35,7 @@ _COLORED = ColorScheme(
     USAGE=Fore.YELLOW,
     GREETING=Fore.GREEN + Style.BRIGHT,
     FAREWELL=Fore.GREEN + Style.BRIGHT,
+    ROLE=Style.DIM,
 )
 
 _PLAIN = ColorScheme(
@@ -49,6 +51,7 @@ _PLAIN = ColorScheme(
     USAGE="",
     GREETING="",
     FAREWELL="",
+    ROLE="",
 )
 
 

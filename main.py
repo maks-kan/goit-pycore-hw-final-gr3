@@ -35,10 +35,10 @@ class Storage:
 TITLE = "Assistant Bot"
 TEAM_NAME = "Team #3"
 TEAM_MEMBERS = [
-    "Olga Shadrunova",
-    "Maks Kaniuka",
-    "Ivan Bochkarov",
-    "Oleksandr Semychenkov",
+    ("Maks Kaniuka", "Team Lead"),
+    ("Olga Shadrunova", "Developer 1"),
+    ("Ivan Bochkarov", "Developer 2"),
+    ("Oleksandr Semychenkov", "Developer 3"),
 ]
 
 
@@ -55,11 +55,18 @@ def format_title(title: str, colors: ColorScheme) -> str:
     )
 
 
-def format_team(name: str, members: list[str], colors: ColorScheme) -> str:
-    """Format team block with members listed."""
+def format_team(
+    name: str, members: list[tuple[str, str]], colors: ColorScheme,
+) -> str:
+    """Format team block with members and their roles."""
+    max_name = max(len(m) for m, _ in members)
     lines = [f"  {colors.TEAM}{name}:{colors.RESET}"]
-    for member in members:
-        lines.append(f"    {colors.BULLET}●{colors.RESET} {member}")
+    for member, role in members:
+        padded = f"{member:<{max_name}}"
+        lines.append(
+            f"    {colors.BULLET}●{colors.RESET} {padded}"
+            f"  {colors.ROLE}({role}){colors.RESET}"
+        )
     return "\n".join(lines)
 
 

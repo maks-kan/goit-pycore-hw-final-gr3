@@ -20,10 +20,13 @@ def test_format_title_has_box_and_shadow() -> None:
 
 
 def test_format_team_lists_members() -> None:
-    result = strip_ansi(format_team("Team X", ["Alice", "Bob"], _COLORS))
+    members = [("Alice", "Lead"), ("Bob", "Developer")]
+    result = strip_ansi(format_team("Team X", members, _COLORS))
     assert "Team X:" in result
     assert "● Alice" in result
+    assert "(Lead)" in result
     assert "● Bob" in result
+    assert "(Developer)" in result
 
 
 def test_quit_command(monkeypatch, capsys) -> None:
