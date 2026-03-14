@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 from colorama import Fore, Style, init
 
-init()
-
 
 @dataclass(frozen=True)
 class ColorScheme:
@@ -58,18 +56,3 @@ def make_scheme(*, no_color: bool) -> ColorScheme:
     """Return a colored or plain scheme and initialise colorama accordingly."""
     init(strip=no_color)
     return _PLAIN if no_color else _COLORED
-
-
-# Legacy module-level constants for backward compatibility.
-RESET = Style.RESET_ALL
-TITLE = Fore.CYAN + Style.BRIGHT
-SHADOW = Style.DIM
-TEAM = Fore.GREEN
-BULLET = Fore.YELLOW
-CMD_NAME = Fore.CYAN
-CMD_DESC = Fore.WHITE
-HEADER = Fore.MAGENTA + Style.BRIGHT
-ERROR = Fore.RED
-USAGE = Fore.YELLOW
-GREETING = Fore.GREEN + Style.BRIGHT
-FAREWELL = Fore.GREEN + Style.BRIGHT
