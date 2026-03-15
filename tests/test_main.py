@@ -68,11 +68,11 @@ def test_unknown_command(monkeypatch, capsys) -> None:
 
 
 def test_unknown_command_suggests_similar(monkeypatch, capsys) -> None:
-    inputs = iter(["greeet", "quit"])
+    inputs = iter(["helo", "quit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     main([])
     output = capsys.readouterr().out
-    assert "Did you mean: greet?" in output
+    assert "Did you mean: hello?" in output
 
 
 def test_eof_exits_gracefully(monkeypatch, capsys) -> None:
@@ -85,47 +85,20 @@ def test_eof_exits_gracefully(monkeypatch, capsys) -> None:
     assert "Good bye!" in output
 
 
-def test_echo_command(monkeypatch, capsys) -> None:
-    inputs = iter(["echo hello world", "quit"])
-    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    main([])
-    output = capsys.readouterr().out
-    assert "1: hello" in output
-    assert "2: world" in output
-
-
-def test_echo_with_quoted_args(monkeypatch, capsys) -> None:
-    inputs = iter(['echo "hello world" foo', "quit"])
-    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    main([])
-    output = capsys.readouterr().out
-    assert "1: hello world" in output
-    assert "2: foo" in output
-
-
 def test_unmatched_quotes(monkeypatch, capsys) -> None:
-    inputs = iter(['echo "hello', "quit"])
+    inputs = iter(['add "hello', "quit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     main([])
     output = capsys.readouterr().out
     assert "Invalid input: unmatched quotes." in output
 
 
-def test_greet_command(monkeypatch, capsys) -> None:
-    inputs = iter(["greet Alice", "quit"])
+def test_hello_command(monkeypatch, capsys) -> None:
+    inputs = iter(["hello", "quit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
     main([])
     output = capsys.readouterr().out
-    assert "Hello, Alice!" in output
-
-
-def test_greet_without_name_shows_usage(monkeypatch, capsys) -> None:
-    inputs = iter(["greet", "quit"])
-    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    main([])
-    output = capsys.readouterr().out
-    assert "Invalid input: name is required" in output
-    assert "Usage: greet" in output
+    assert "How can I help you?" in output
 
 
 def test_greeting_includes_all_sections(monkeypatch, capsys) -> None:

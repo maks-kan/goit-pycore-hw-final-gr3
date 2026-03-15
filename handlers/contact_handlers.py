@@ -1,341 +1,213 @@
-import json
-from models import AddressBook, Record
-from decorators import input_error
+from cli.commands import command
+from cli.errors import UsageError
+from models.address_book import AddressBook
+from models.record import Record
 
 
-def save_data(book, filename="addressbook.json"):
-    """Зберігає AddressBook у JSON-файл."""
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(book.to_dict(), f, ensure_ascii=False, indent=4)
+@command("Greet the bot.")
+def handle_hello(*args: str) -> str:
+    return "How can I help you?"
 
 
-def load_data(filename="addressbook.json"):
-    """
-    Завантажує AddressBook із JSON-файлу.
-    Якщо файл не знайдено або він пошкоджений — повертає нову AddressBook().
-    """
-    try:
-        with open(filename, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return AddressBook.from_dict(data)
-    except FileNotFoundError:
-        return AddressBook()
-    except (json.JSONDecodeError, KeyError, TypeError, ValueError):
-        return AddressBook()
+@command("Add a contact or phone. Usage: add <name> <phone>")
+def handle_add_contact(*args: str, book: AddressBook) -> str:
+    if len(args) < 2:
+        raise UsageError("name and phone are required")
+    name, phone = args[0], args[1]
 
-
-def show_help():
-    """Показує список доступних команд."""
-    commands = """
-Available commands:
-
-hello
-    greet the bot
-
-add <name> <phone>
-    add new contact with phone
-    
-delete <name>
-    delete contact
-
-change-phone <name> <old_phone> <new_phone>
-    change phone number
-
-remove-phone <name> <phone>
-    remove phone from contact
-
-phone <name>
-    show phones of contact
-
-all
-    show all contacts
-
-add-birthday <name> <DD.MM.YYYY>
-show-birthday <name>
-change-birthday <name> <DD.MM.YYYY>
-remove-birthday <name>
-
-birthdays
-    show upcoming birthdays
-
-add-address <name> <address>
-remove-address <name>
-show-address <name>
-change-address <name> <new_address>
-
-add-email <name> <email>
-remove-email <name>
-show-email <name>
-change-email <name> <new_email>
-
-help
-    show this help message
-
-exit / close
-    save contacts and exit program
-"""
-    return commands
-
-
-@input_error
-def add_contact(args, book: AddressBook):
-    """Команда: add <name> <phone>"""
-    name, phone, *_ = args
-
-    record = book.find(name)
-    message = "Contact updated."
-
+    record = book.get_record(name)
     if record is None:
         record = Record(name)
         book.add_record(record)
-        message = "Contact added."
+        record.add_phone(phone)
+        return "Contact added."
+    if record.add_phone(phone):
+        return "Contact updated."
+    return "Phone already exists."
 
-    record.add_phone(phone)
-    return message
+
+@command("Delete a contact. Usage: delete <name>")
+def handle_delete_contact(*args: str, book: AddressBook) -> str:
+    if not args:
+        raise UsageError("name is required")
+    try:
+        book.delete_record(args[0])
+    except ValueError:
+        return "Contact not found."
+    return "Contact deleted."
 
 
-@input_error
-def change_phone(args, book: AddressBook):
-    """Команда: change <name> <old_phone> <new_phone>"""
-    name, old_phone, new_phone = args
+@command("Change a phone number. Usage: change-phone <name> <old> <new>")
+def handle_change_phone(*args: str, book: AddressBook) -> str:
+    if len(args) < 3:
+        raise UsageError("name, old phone, and new phone are required")
+    name, old_phone, new_phone = args[0], args[1], args[2]
 
-    record = book.find(name)
+    record = book.get_record(name)
     if record is None:
-        raise KeyError("Contact not found.")
-
+        return "Contact not found."
     record.edit_phone(old_phone, new_phone)
     return "Phone updated."
 
 
-@input_error
-def remove_phone(args, book: AddressBook):
-    """Команда: remove-phone <name> <phone>"""
-    name, phone = args
+@command("Remove a phone number. Usage: remove-phone <name> <phone>")
+def handle_remove_phone(*args: str, book: AddressBook) -> str:
+    if len(args) < 2:
+        raise UsageError("name and phone are required")
 
-    record = book.find(name)
+    record = book.get_record(args[0])
     if record is None:
-        raise KeyError("Contact not found.")
-
-    record.remove_phone(phone)
+        return "Contact not found."
+    record.remove_phone(args[1])
     return "Phone removed."
 
 
-@input_error
-def delete_contact(args, book: AddressBook):
-    """Команда: delete <name>"""
-    name = args[0]
-    book.delete(name)
-    return "Contact deleted."
+@command("Show phones of a contact. Usage: phone <name>")
+def handle_show_phone(*args: str, book: AddressBook) -> str:
+    if not args:
+        raise UsageError("name is required")
 
-
-@input_error
-def show_phone(args, book: AddressBook):
-    """Команда: phone <name>"""
-    name = args[0]
-
-    record = book.find(name)
+    record = book.get_record(args[0])
     if record is None:
-        raise KeyError("Contact not found.")
-
+        return "Contact not found."
     if not record.phones:
         return "No phone numbers for this contact."
-
     return "; ".join(p.value for p in record.phones)
 
 
-@input_error
-def show_all(args, book: AddressBook):
-    """Команда: all"""
+@command("Show all contacts.")
+def handle_show_all(*args: str, book: AddressBook) -> str:
     if args:
-        raise ValueError("Command 'all' does not take arguments.")
-
-    if not book.data:
+        raise UsageError("no arguments expected")
+    records = book.list_all()
+    if not records:
         return "No contacts saved."
+    return "\n".join(str(r) for r in records)
 
-    return "\n".join(str(record) for record in book.data.values())
 
+@command("Set birthday. Usage: add-birthday <name> <DD.MM.YYYY>")
+def handle_add_birthday(*args: str, book: AddressBook) -> str:
+    if len(args) < 2:
+        raise UsageError("name and birthday are required")
 
-@input_error
-def add_birthday(args, book: AddressBook):
-    """Команда: add-birthday <name> <DD.MM.YYYY>"""
-    name, birthday = args
-
-    record = book.find(name)
+    record = book.get_record(args[0])
     if record is None:
-        raise KeyError("Contact not found.")
-
-    record.add_birthday(birthday)
+        return "Contact not found."
+    record.edit_birthday(args[1])
     return "Birthday added."
 
 
-@input_error
-def change_birthday(args, book: AddressBook):
-    """Команда: change-birthday <name> <DD.MM.YYYY>"""
-    name, new_birthday = args
+@command("Show birthday. Usage: show-birthday <name>")
+def handle_show_birthday(*args: str, book: AddressBook) -> str:
+    if not args:
+        raise UsageError("name is required")
 
-    record = book.find(name)
+    record = book.get_record(args[0])
     if record is None:
-        raise KeyError("Contact not found.")
+        return "Contact not found."
+    if record.birthday is None:
+        return "Birthday not set."
+    return record.birthday.value.strftime("%d.%m.%Y")
 
-    record.add_birthday(new_birthday)
+
+@command("Change birthday. Usage: change-birthday <name> <DD.MM.YYYY>")
+def handle_change_birthday(*args: str, book: AddressBook) -> str:
+    if len(args) < 2:
+        raise UsageError("name and birthday are required")
+
+    record = book.get_record(args[0])
+    if record is None:
+        return "Contact not found."
+    record.edit_birthday(args[1])
     return "Birthday updated."
 
 
-@input_error
-def remove_birthday(args, book: AddressBook):
-    """Команда: remove-birthday <name>"""
-    name = args[0]
+@command("Remove birthday. Usage: remove-birthday <name>")
+def handle_remove_birthday(*args: str, book: AddressBook) -> str:
+    if not args:
+        raise UsageError("name is required")
 
-    record = book.find(name)
+    record = book.get_record(args[0])
     if record is None:
-        raise KeyError("Contact not found.")
-
-    record.remove_birthday()
+        return "Contact not found."
+    record.birthday = None
     return "Birthday removed."
 
 
-@input_error
-def show_birthday(args, book: AddressBook):
-    """Команда: show-birthday <name>"""
-    name = args[0]
+@command("Set email. Usage: add-email <name> <email>")
+def handle_add_email(*args: str, book: AddressBook) -> str:
+    if len(args) < 2:
+        raise UsageError("name and email are required")
 
-    record = book.find(name)
+    record = book.get_record(args[0])
     if record is None:
-        raise KeyError("Contact not found.")
-
-    if record.birthday is None:
-        return "Birthday not set."
-
-    return str(record.birthday)
-
-
-@input_error
-def add_address(args, book: AddressBook):
-    """Команда: add-address <name> <address...>"""
-    name = args[0]
-    address = " ".join(args[1:])
-
-    if not address:
-        raise IndexError
-
-    record = book.find(name)
-    if record is None:
-        raise KeyError("Contact not found.")
-
-    record.add_address(address)
-    return "Address added."
-
-
-@input_error
-def change_address(args, book: AddressBook):
-    """Команда: change-address <name> <new_address...>"""
-    name = args[0]
-    new_address = " ".join(args[1:])
-
-    if not new_address:
-        raise IndexError
-
-    record = book.find(name)
-    if record is None:
-        raise KeyError("Contact not found.")
-
-    record.add_address(new_address)
-    return "Address updated."
-
-
-@input_error
-def remove_address(args, book: AddressBook):
-    """Команда: remove-address <name>"""
-    name = args[0]
-
-    record = book.find(name)
-    if record is None:
-        raise KeyError("Contact not found.")
-
-    record.remove_address()
-    return "Address removed."
-
-
-@input_error
-def show_address(args, book: AddressBook):
-    """Команда: show-address <name>"""
-    name = args[0]
-
-    record = book.find(name)
-    if record is None:
-        raise KeyError("Contact not found.")
-
-    if record.address is None:
-        return "Address not set."
-
-    return record.address.value
-
-
-@input_error
-def add_email(args, book: AddressBook):
-    """Команда: add-email <name> <email>"""
-    name, email = args
-
-    record = book.find(name)
-    if record is None:
-        raise KeyError("Contact not found.")
-
-    record.add_email(email)
+        return "Contact not found."
+    record.edit_email(args[1])
     return "Email added."
 
 
-@input_error
-def change_email(args, book: AddressBook):
-    """Команда: change-email <name> <new_email>"""
-    name, new_email = args
+@command("Show email. Usage: show-email <name>")
+def handle_show_email(*args: str, book: AddressBook) -> str:
+    if not args:
+        raise UsageError("name is required")
 
-    record = book.find(name)
+    record = book.get_record(args[0])
     if record is None:
-        raise KeyError("Contact not found.")
-
-    record.add_email(new_email)
-    return "Email updated."
-
-
-@input_error
-def remove_email(args, book: AddressBook):
-    """Команда: remove-email <name>"""
-    name = args[0]
-
-    record = book.find(name)
-    if record is None:
-        raise KeyError("Contact not found.")
-
-    record.remove_email()
-    return "Email removed."
-
-
-@input_error
-def show_email(args, book: AddressBook):
-    """Команда: show-email <name>"""
-    name = args[0]
-
-    record = book.find(name)
-    if record is None:
-        raise KeyError("Contact not found.")
-
+        return "Contact not found."
     if record.email is None:
         return "Email not set."
-
     return record.email.value
 
 
-@input_error
-def birthdays(args, book: AddressBook):
-    """Команда: birthdays"""
+@command("Change email. Usage: change-email <name> <email>")
+def handle_change_email(*args: str, book: AddressBook) -> str:
+    if len(args) < 2:
+        raise UsageError("name and email are required")
+
+    record = book.get_record(args[0])
+    if record is None:
+        return "Contact not found."
+    record.edit_email(args[1])
+    return "Email updated."
+
+
+@command("Remove email. Usage: remove-email <name>")
+def handle_remove_email(*args: str, book: AddressBook) -> str:
+    if not args:
+        raise UsageError("name is required")
+
+    record = book.get_record(args[0])
+    if record is None:
+        return "Contact not found."
+    record.email = None
+    return "Email removed."
+
+
+@command("Search contacts. Usage: search <query>")
+def handle_search(*args: str, book: AddressBook) -> str:
+    if not args:
+        raise UsageError("query is required")
+
+    results = book.search(args[0])
+    if not results:
+        return "No contacts found."
+    return "\n".join(str(r) for r in results)
+
+
+@command("Show upcoming birthdays (next 7 days).")
+def handle_birthdays(*args: str, book: AddressBook) -> str:
     if args:
-        raise ValueError("Command 'birthdays' does not take arguments.")
+        raise UsageError("no arguments expected")
 
-    upcoming = book.get_upcoming_birthdays()
-
+    upcoming = []
+    for record in book.list_all():
+        days = record.days_to_birthday()
+        if days is not None and days <= 7:
+            bday = record.birthday.value.strftime("%d.%m.%Y")
+            upcoming.append((record.name.value, days, bday))
     if not upcoming:
         return "No birthdays in the next 7 days."
-
+    upcoming.sort(key=lambda x: x[1])
     return "\n".join(
-        f"{item['name']}: {item['congratulation_date']}" for item in upcoming
+        f"{name}: {bday} (in {days} day(s))" for name, days, bday in upcoming
     )

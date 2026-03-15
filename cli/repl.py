@@ -4,26 +4,24 @@ from collections.abc import Callable
 
 from cli.colors import ColorScheme
 from cli.commands import handle_help, handle_quit
+from cli.errors import UsageError
 
 
 def run_repl(
     commands: dict[str, Callable],
     colors: ColorScheme,
-    book: object,
-    storage: object,
+    on_save: Callable[[], None],
 ) -> None:
     """Read-eval-print loop for the assistant bot.
 
-    ``book`` must expose ``.is_changed()`` and ``storage`` must expose
-    ``.save(book)`` so the REPL can persist changes automatically.
+    ``on_save`` is called after every command to persist data.
     """
     while True:
         try:
             user_input = input(">>> ").strip()
         except EOFError, KeyboardInterrupt:
             print()
-            if book.is_changed():
-                storage.save(book)
+            on_save()
             print(handle_quit(colors=colors))
             break
 
@@ -39,8 +37,7 @@ def run_repl(
         cmd_name = parts[0].lower()
 
         if cmd_name in ("quit", "exit", "close"):
-            if book.is_changed():
-                storage.save(book)
+            on_save()
             print(handle_quit(colors=colors))
             break
 
@@ -61,13 +58,13 @@ def run_repl(
 
         try:
             result = handler(*parts[1:])
+        except UsageError as exc:
+            print(f"\n  {colors.ERROR}{exc}{colors.RESET}")
+            print(f"  {colors.USAGE}{handler.__doc__}{colors.RESET}\n")
+            continue
         except ValueError as exc:
-            print(f"\n  {colors.ERROR}Invalid input: {exc}{colors.RESET}")
-            usage = f"{cmd_name} — {handler.__doc__}"
-            print(f"  {colors.USAGE}Usage: {usage}{colors.RESET}\n")
+            print(f"\n  {colors.ERROR}Error: {exc}{colors.RESET}\n")
             continue
 
         print(f"\n{result}\n")
-
-        if book.is_changed():
-            storage.save(book)
+        on_save()
