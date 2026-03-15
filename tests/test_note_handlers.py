@@ -2,6 +2,7 @@
 
 import pytest
 
+from cli.colors import ColorScheme
 from cli.errors import AlreadyExistsError, NotFoundError, UsageError
 from handlers.note_handlers import (
     handle_add_note,
@@ -25,144 +26,150 @@ def nb() -> NoteBook:
 
 
 class TestAddNote:
-    def test_add(self, nb: NoteBook) -> None:
-        result = handle_add_note("Ideas", "Learn", "Rust", notebook=nb)
+    def test_add(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_add_note("Ideas", "Learn", "Rust", notebook=nb, colors=colors)
         assert result == "Note 'Ideas' added."
         assert len(nb) == 3
         assert nb.notes[-1].text == "Learn Rust"
 
-    def test_duplicate_title(self, nb: NoteBook) -> None:
+    def test_duplicate_title(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(AlreadyExistsError, match="already exists"):
-            handle_add_note("Shopping", "Other text", notebook=nb)
+            handle_add_note("Shopping", "Other text", notebook=nb, colors=colors)
 
-    def test_no_args_raises(self) -> None:
+    def test_no_args_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="title and text are required"):
-            handle_add_note(notebook=NoteBook())
+            handle_add_note(notebook=NoteBook(), colors=colors)
 
-    def test_title_only_raises(self) -> None:
+    def test_title_only_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="title and text are required"):
-            handle_add_note("Title", notebook=NoteBook())
+            handle_add_note("Title", notebook=NoteBook(), colors=colors)
 
 
 class TestDeleteNote:
-    def test_delete(self, nb: NoteBook) -> None:
-        result = handle_delete_note("Shopping", notebook=nb)
+    def test_delete(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_delete_note("Shopping", notebook=nb, colors=colors)
         assert result == "Note 'Shopping' deleted."
         assert len(nb) == 1
 
-    def test_not_found(self, nb: NoteBook) -> None:
+    def test_not_found(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(NotFoundError, match="not found"):
-            handle_delete_note("Nonexistent", notebook=nb)
+            handle_delete_note("Nonexistent", notebook=nb, colors=colors)
 
-    def test_no_args_raises(self) -> None:
+    def test_no_args_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="title is required"):
-            handle_delete_note(notebook=NoteBook())
+            handle_delete_note(notebook=NoteBook(), colors=colors)
 
 
 class TestEditNote:
-    def test_edit_text(self, nb: NoteBook) -> None:
-        result = handle_edit_note("Shopping", "Updated", "text", notebook=nb)
+    def test_edit_text(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_edit_note(
+            "Shopping", "Updated", "text", notebook=nb, colors=colors
+        )
         assert result == "Note 'Shopping' updated."
         assert nb.find_note_by_title("Shopping").text == "Updated text"
 
-    def test_not_found(self, nb: NoteBook) -> None:
+    def test_not_found(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(NotFoundError, match="not found"):
-            handle_edit_note("Nonexistent", "text", notebook=nb)
+            handle_edit_note("Nonexistent", "text", notebook=nb, colors=colors)
 
-    def test_preserves_tags(self, nb: NoteBook) -> None:
-        handle_edit_note("Work", "New", "text", notebook=nb)
+    def test_preserves_tags(self, nb: NoteBook, colors: ColorScheme) -> None:
+        handle_edit_note("Work", "New", "text", notebook=nb, colors=colors)
         assert nb.find_note_by_title("Work").tags == ["urgent"]
 
-    def test_not_enough_args_raises(self) -> None:
+    def test_not_enough_args_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="title and new text are required"):
-            handle_edit_note("Title", notebook=NoteBook())
+            handle_edit_note("Title", notebook=NoteBook(), colors=colors)
 
 
 class TestRenameNote:
-    def test_rename(self, nb: NoteBook) -> None:
-        result = handle_rename_note("Shopping", "Groceries", notebook=nb)
+    def test_rename(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_rename_note("Shopping", "Groceries", notebook=nb, colors=colors)
         assert result == "Note 'Shopping' renamed to 'Groceries'."
         assert nb.find_note_by_title("Groceries") is not None
         assert nb.find_note_by_title("Shopping") is None
 
-    def test_not_found(self, nb: NoteBook) -> None:
+    def test_not_found(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(NotFoundError, match="not found"):
-            handle_rename_note("Nonexistent", "New", notebook=nb)
+            handle_rename_note("Nonexistent", "New", notebook=nb, colors=colors)
 
-    def test_target_exists(self, nb: NoteBook) -> None:
+    def test_target_exists(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(AlreadyExistsError, match="already exist"):
-            handle_rename_note("Shopping", "Work", notebook=nb)
+            handle_rename_note("Shopping", "Work", notebook=nb, colors=colors)
 
-    def test_not_enough_args_raises(self) -> None:
+    def test_not_enough_args_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="title and new title are required"):
-            handle_rename_note("Title", notebook=NoteBook())
+            handle_rename_note("Title", notebook=NoteBook(), colors=colors)
 
 
 class TestAddTags:
-    def test_add_tags(self, nb: NoteBook) -> None:
-        result = handle_add_tags("Shopping", "food", "weekly", notebook=nb)
+    def test_add_tags(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_add_tags(
+            "Shopping", "food", "weekly", notebook=nb, colors=colors
+        )
         assert result == "Tags added to note 'Shopping'."
         note = nb.find_note_by_title("Shopping")
         assert "food" in note.tags
         assert "weekly" in note.tags
 
-    def test_not_found(self, nb: NoteBook) -> None:
+    def test_not_found(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(NotFoundError, match="not found"):
-            handle_add_tags("Nonexistent", "tag", notebook=nb)
+            handle_add_tags("Nonexistent", "tag", notebook=nb, colors=colors)
 
-    def test_invalid_tag(self, nb: NoteBook) -> None:
+    def test_invalid_tag(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(ValueError, match="Invalid tag"):
-            handle_add_tags("Shopping", "bad!tag", notebook=nb)
+            handle_add_tags("Shopping", "bad!tag", notebook=nb, colors=colors)
 
-    def test_not_enough_args_raises(self) -> None:
+    def test_not_enough_args_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="title and at least one tag"):
-            handle_add_tags("Title", notebook=NoteBook())
+            handle_add_tags("Title", notebook=NoteBook(), colors=colors)
 
 
 class TestRemoveTag:
-    def test_remove_tag(self, nb: NoteBook) -> None:
-        result = handle_remove_tag("Work", "urgent", notebook=nb)
+    def test_remove_tag(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_remove_tag("Work", "urgent", notebook=nb, colors=colors)
         assert result == "Tag 'urgent' removed from note 'Work'."
         assert nb.find_note_by_title("Work").tags == []
 
-    def test_tag_not_found(self, nb: NoteBook) -> None:
+    def test_tag_not_found(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(NotFoundError, match="not found"):
-            handle_remove_tag("Work", "nonexistent", notebook=nb)
+            handle_remove_tag("Work", "nonexistent", notebook=nb, colors=colors)
 
-    def test_note_not_found(self, nb: NoteBook) -> None:
+    def test_note_not_found(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(NotFoundError, match="not found"):
-            handle_remove_tag("Nonexistent", "tag", notebook=nb)
+            handle_remove_tag("Nonexistent", "tag", notebook=nb, colors=colors)
 
-    def test_not_enough_args_raises(self) -> None:
+    def test_not_enough_args_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="title and tag are required"):
-            handle_remove_tag("Title", notebook=NoteBook())
+            handle_remove_tag("Title", notebook=NoteBook(), colors=colors)
 
 
 class TestSearchNotes:
-    def test_found(self, nb: NoteBook) -> None:
-        result = handle_search_notes("milk", notebook=nb)
+    def test_found(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_search_notes("milk", notebook=nb, colors=colors)
         assert "Shopping" in result
 
-    def test_not_found(self, nb: NoteBook) -> None:
-        assert handle_search_notes("xyz", notebook=nb) == "No notes found."
+    def test_not_found(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_search_notes("xyz", notebook=nb, colors=colors)
+        assert result == "No notes found."
 
-    def test_no_args_raises(self) -> None:
+    def test_no_args_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="keyword is required"):
-            handle_search_notes(notebook=NoteBook())
+            handle_search_notes(notebook=NoteBook(), colors=colors)
 
 
 class TestShowAllNotes:
-    def test_lists_notes(self, nb: NoteBook) -> None:
-        result = handle_show_all_notes(notebook=nb)
+    def test_lists_notes(self, nb: NoteBook, colors: ColorScheme) -> None:
+        result = handle_show_all_notes(notebook=nb, colors=colors)
         assert "Shopping" in result
         assert "Work" in result
         lines = result.splitlines()
         assert lines[0].startswith("Title")
         assert "─" in lines[1]
 
-    def test_empty_notebook(self) -> None:
-        assert handle_show_all_notes(notebook=NoteBook()) == "No notes saved."
+    def test_empty_notebook(self, colors: ColorScheme) -> None:
+        result = handle_show_all_notes(notebook=NoteBook(), colors=colors)
+        assert result == "No notes saved."
 
-    def test_with_args_raises(self, nb: NoteBook) -> None:
+    def test_with_args_raises(self, nb: NoteBook, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="no arguments expected"):
-            handle_show_all_notes("x", notebook=nb)
+            handle_show_all_notes("x", notebook=nb, colors=colors)
