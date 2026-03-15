@@ -1,8 +1,11 @@
 from datetime import date
-from models.fields import Name, Phone, Email, Birthday
+
+from models.fields import Birthday, Email, Name, Phone
+
 
 class Record:
     """Клас запису (контакту) в адресній книзі."""
+
     def __init__(self, name, phones=None, email=None, birthday=None):
         self.name = Name(name)
         self.phones = []
@@ -75,7 +78,15 @@ class Record:
         return (next_bday - today).days
 
     def __str__(self):
-        phones_str = ", ".join(p.value for p in self.phones) if self.phones else "немає телефонів"
+        phones_str = (
+            ", ".join(p.value for p in self.phones)
+            if self.phones
+            else "немає телефонів"
+        )
         email_str = f", Email: {self.email.value}" if self.email else ""
-        bday_str = f", Birthday: {self.birthday.value.strftime('%d.%m.%Y')}" if self.birthday else ""
+        bday_str = (
+            f", Birthday: {self.birthday.value.strftime('%d.%m.%Y')}"
+            if self.birthday
+            else ""
+        )
         return f"{self.name.value}: Телефони: {phones_str}{email_str}{bday_str}"

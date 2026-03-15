@@ -20,7 +20,7 @@ def run_repl(
     while True:
         try:
             user_input = input(">>> ").strip()
-        except (EOFError, KeyboardInterrupt):
+        except EOFError, KeyboardInterrupt:
             print()
             if book.is_changed():
                 storage.save(book)

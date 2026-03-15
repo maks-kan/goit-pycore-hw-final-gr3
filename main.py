@@ -56,7 +56,9 @@ def format_title(title: str, colors: ColorScheme) -> str:
 
 
 def format_team(
-    name: str, members: list[tuple[str, str]], colors: ColorScheme,
+    name: str,
+    members: list[tuple[str, str]],
+    colors: ColorScheme,
 ) -> str:
     """Format team block with members and their roles."""
     max_name = max(len(m) for m, _ in members)
@@ -78,7 +80,8 @@ def _bind(func: Callable, **kwargs: Any) -> Callable:
 
 
 def bootstrap_commands(
-    colors: ColorScheme, book: AddressBook,
+    colors: ColorScheme,
+    book: AddressBook,
 ) -> dict[str, Callable]:
     """Build the command registry.
 

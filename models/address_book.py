@@ -1,7 +1,6 @@
-from models.record import Record
-
 class AddressBook:
     """Клас адресної книги для керування контактами."""
+
     def __init__(self):
         self.records = {}  # Словник: ім'я -> Record
 

@@ -1,27 +1,31 @@
 from models.note import Note
 
+
 class NoteBook:
-    """Клас NoteBook керує списком нотаток (додавання, пошук, редагування, видалення)."""
+    """Керує списком нотаток (додавання, пошук, редагування, видалення)."""
+
     def __init__(self):
         """Ініціалізує записник порожнім списком нотаток."""
         self.notes: list[Note] = []  # список з об'єктів Note
 
     def add_note(self, text: str, tags: list[str] = None) -> None:
         """Додає нову нотатку з заданим текстом та тегами до записника."""
-        new_note = Note(text, tags)    # створюємо об'єкт Note
-        self.notes.append(new_note)    # додаємо його до списку нотаток
+        new_note = Note(text, tags)  # створюємо об'єкт Note
+        self.notes.append(new_note)  # додаємо його до списку нотаток
 
     def delete_note(self, index: int) -> bool:
-        """
-        Видаляє нотатку за індексом у списку.
-        Повертає True, якщо видалення пройшло успішно, або False, якщо індекс некоректний.
+        """Видаляє нотатку за індексом у списку.
+
+        Повертає True якщо успішно, False якщо індекс некоректний.
         """
         if 0 <= index < len(self.notes):
-            self.notes.pop(index)     # видаляємо нотатку зі списку
+            self.notes.pop(index)  # видаляємо нотатку зі списку
             return True
         return False  # якщо індекс не валідний
 
-    def edit_note(self, index: int, new_text: str = None, new_tags: list[str] = None) -> bool:
+    def edit_note(
+        self, index: int, new_text: str = None, new_tags: list[str] = None
+    ) -> bool:
         """
         Редагує існуючу нотатку за заданим індексом.
         Можна змінити текст, теги або і те, і інше (якщо передано).
@@ -30,9 +34,9 @@ class NoteBook:
         if 0 <= index < len(self.notes):
             note = self.notes[index]
             if new_text is not None:
-                note.text = new_text      # оновлюємо текст нотатки
+                note.text = new_text  # оновлюємо текст нотатки
             if new_tags is not None:
-                note.tags = new_tags      # оновлюємо список тегів
+                note.tags = new_tags  # оновлюємо список тегів
             return True
         return False
 
