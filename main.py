@@ -5,7 +5,7 @@ from functools import partial
 from typing import Any
 
 from cli.colors import ColorScheme, make_scheme
-from cli.commands import handle_echo, handle_greet, handle_help, handle_quit
+from cli.commands import handle_help, handle_quit
 from cli.repl import run_repl
 from handlers.contact_handlers import (
     handle_add_birthday,
@@ -16,6 +16,7 @@ from handlers.contact_handlers import (
     handle_change_email,
     handle_change_phone,
     handle_delete_contact,
+    handle_hello,
     handle_remove_birthday,
     handle_remove_email,
     handle_remove_phone,
@@ -130,9 +131,7 @@ def bootstrap_commands(
     """
     return {
         # Built-in commands
-        "echo": handle_echo,
-        "greet": _bind(handle_greet, colors=colors),
-        "hello": _bind(handle_greet, colors=colors),
+        "hello": handle_hello,
         "quit": _bind(handle_quit, colors=colors),
         "help": _bind(handle_help, colors=colors),
         # Contact commands

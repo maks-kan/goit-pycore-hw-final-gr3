@@ -1,12 +1,18 @@
 from cli.commands import command
+from cli.errors import UsageError
 from models.address_book import AddressBook
 from models.record import Record
+
+
+@command("Greet the bot.")
+def handle_hello(*args: str) -> str:
+    return "How can I help you?"
 
 
 @command("Add a contact or phone. Usage: add <name> <phone>")
 def handle_add_contact(*args: str, book: AddressBook) -> str:
     if len(args) < 2:
-        raise ValueError("name and phone are required")
+        raise UsageError("name and phone are required")
     name, phone = args[0], args[1]
 
     record = book.get_record(name)
@@ -23,7 +29,7 @@ def handle_add_contact(*args: str, book: AddressBook) -> str:
 @command("Delete a contact. Usage: delete <name>")
 def handle_delete_contact(*args: str, book: AddressBook) -> str:
     if not args:
-        raise ValueError("name is required")
+        raise UsageError("name is required")
     try:
         book.delete_record(args[0])
     except ValueError:
@@ -34,7 +40,7 @@ def handle_delete_contact(*args: str, book: AddressBook) -> str:
 @command("Change a phone number. Usage: change-phone <name> <old> <new>")
 def handle_change_phone(*args: str, book: AddressBook) -> str:
     if len(args) < 3:
-        raise ValueError("name, old phone, and new phone are required")
+        raise UsageError("name, old phone, and new phone are required")
     name, old_phone, new_phone = args[0], args[1], args[2]
 
     record = book.get_record(name)
@@ -47,7 +53,7 @@ def handle_change_phone(*args: str, book: AddressBook) -> str:
 @command("Remove a phone number. Usage: remove-phone <name> <phone>")
 def handle_remove_phone(*args: str, book: AddressBook) -> str:
     if len(args) < 2:
-        raise ValueError("name and phone are required")
+        raise UsageError("name and phone are required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -59,7 +65,7 @@ def handle_remove_phone(*args: str, book: AddressBook) -> str:
 @command("Show phones of a contact. Usage: phone <name>")
 def handle_show_phone(*args: str, book: AddressBook) -> str:
     if not args:
-        raise ValueError("name is required")
+        raise UsageError("name is required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -72,7 +78,7 @@ def handle_show_phone(*args: str, book: AddressBook) -> str:
 @command("Show all contacts.")
 def handle_show_all(*args: str, book: AddressBook) -> str:
     if args:
-        raise ValueError("no arguments expected")
+        raise UsageError("no arguments expected")
     records = book.list_all()
     if not records:
         return "No contacts saved."
@@ -82,7 +88,7 @@ def handle_show_all(*args: str, book: AddressBook) -> str:
 @command("Set birthday. Usage: add-birthday <name> <DD.MM.YYYY>")
 def handle_add_birthday(*args: str, book: AddressBook) -> str:
     if len(args) < 2:
-        raise ValueError("name and birthday are required")
+        raise UsageError("name and birthday are required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -94,7 +100,7 @@ def handle_add_birthday(*args: str, book: AddressBook) -> str:
 @command("Show birthday. Usage: show-birthday <name>")
 def handle_show_birthday(*args: str, book: AddressBook) -> str:
     if not args:
-        raise ValueError("name is required")
+        raise UsageError("name is required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -107,7 +113,7 @@ def handle_show_birthday(*args: str, book: AddressBook) -> str:
 @command("Change birthday. Usage: change-birthday <name> <DD.MM.YYYY>")
 def handle_change_birthday(*args: str, book: AddressBook) -> str:
     if len(args) < 2:
-        raise ValueError("name and birthday are required")
+        raise UsageError("name and birthday are required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -119,7 +125,7 @@ def handle_change_birthday(*args: str, book: AddressBook) -> str:
 @command("Remove birthday. Usage: remove-birthday <name>")
 def handle_remove_birthday(*args: str, book: AddressBook) -> str:
     if not args:
-        raise ValueError("name is required")
+        raise UsageError("name is required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -131,7 +137,7 @@ def handle_remove_birthday(*args: str, book: AddressBook) -> str:
 @command("Set email. Usage: add-email <name> <email>")
 def handle_add_email(*args: str, book: AddressBook) -> str:
     if len(args) < 2:
-        raise ValueError("name and email are required")
+        raise UsageError("name and email are required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -143,7 +149,7 @@ def handle_add_email(*args: str, book: AddressBook) -> str:
 @command("Show email. Usage: show-email <name>")
 def handle_show_email(*args: str, book: AddressBook) -> str:
     if not args:
-        raise ValueError("name is required")
+        raise UsageError("name is required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -156,7 +162,7 @@ def handle_show_email(*args: str, book: AddressBook) -> str:
 @command("Change email. Usage: change-email <name> <email>")
 def handle_change_email(*args: str, book: AddressBook) -> str:
     if len(args) < 2:
-        raise ValueError("name and email are required")
+        raise UsageError("name and email are required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -168,7 +174,7 @@ def handle_change_email(*args: str, book: AddressBook) -> str:
 @command("Remove email. Usage: remove-email <name>")
 def handle_remove_email(*args: str, book: AddressBook) -> str:
     if not args:
-        raise ValueError("name is required")
+        raise UsageError("name is required")
 
     record = book.get_record(args[0])
     if record is None:
@@ -180,7 +186,7 @@ def handle_remove_email(*args: str, book: AddressBook) -> str:
 @command("Search contacts. Usage: search <query>")
 def handle_search(*args: str, book: AddressBook) -> str:
     if not args:
-        raise ValueError("query is required")
+        raise UsageError("query is required")
 
     results = book.search(args[0])
     if not results:
@@ -191,7 +197,7 @@ def handle_search(*args: str, book: AddressBook) -> str:
 @command("Show upcoming birthdays (next 7 days).")
 def handle_birthdays(*args: str, book: AddressBook) -> str:
     if args:
-        raise ValueError("no arguments expected")
+        raise UsageError("no arguments expected")
 
     upcoming = []
     for record in book.list_all():

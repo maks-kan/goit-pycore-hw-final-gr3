@@ -2,6 +2,7 @@
 
 import pytest
 
+from cli.errors import UsageError
 from handlers.note_handlers import (
     handle_add_note,
     handle_delete_note,
@@ -27,7 +28,7 @@ class TestAddNote:
         assert nb.notes[-1].text == "Third note"
 
     def test_no_args_raises(self) -> None:
-        with pytest.raises(ValueError, match="text is required"):
+        with pytest.raises(UsageError, match="text is required"):
             handle_add_note(notebook=NoteBook())
 
 
@@ -42,11 +43,11 @@ class TestDeleteNote:
         assert result == "Note not found (invalid number)."
 
     def test_non_integer_raises(self, nb: NoteBook) -> None:
-        with pytest.raises(ValueError, match="number must be an integer"):
+        with pytest.raises(UsageError, match="number must be an integer"):
             handle_delete_note("abc", notebook=nb)
 
     def test_no_args_raises(self) -> None:
-        with pytest.raises(ValueError, match="number is required"):
+        with pytest.raises(UsageError, match="number is required"):
             handle_delete_note(notebook=NoteBook())
 
 
@@ -64,7 +65,7 @@ class TestEditNote:
         assert nb.notes[0].tags == ["work"]
 
     def test_not_enough_args_raises(self) -> None:
-        with pytest.raises(ValueError, match="number and new text"):
+        with pytest.raises(UsageError, match="number and new text"):
             handle_edit_note("1", notebook=NoteBook())
 
 
@@ -77,7 +78,7 @@ class TestSearchNotes:
         assert handle_search_notes("xyz", notebook=nb) == "No notes found."
 
     def test_no_args_raises(self) -> None:
-        with pytest.raises(ValueError, match="keyword is required"):
+        with pytest.raises(UsageError, match="keyword is required"):
             handle_search_notes(notebook=NoteBook())
 
 
@@ -93,5 +94,5 @@ class TestShowAllNotes:
         assert handle_show_all_notes(notebook=NoteBook()) == "No notes saved."
 
     def test_with_args_raises(self, nb: NoteBook) -> None:
-        with pytest.raises(ValueError, match="no arguments expected"):
+        with pytest.raises(UsageError, match="no arguments expected"):
             handle_show_all_notes("x", notebook=nb)

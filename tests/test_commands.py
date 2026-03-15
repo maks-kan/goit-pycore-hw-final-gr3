@@ -1,10 +1,6 @@
-import pytest
-
 from cli.colors import make_scheme
 from cli.commands import (
     command,
-    handle_echo,
-    handle_greet,
     handle_help,
     handle_quit,
 )
@@ -23,24 +19,6 @@ def test_command_decorator_sets_docstring() -> None:
     assert dummy() == 42
 
 
-def test_handle_echo_returns_numbered_args() -> None:
-    assert handle_echo("hello", "world") == "  1: hello\n  2: world"
-
-
-def test_handle_echo_no_args() -> None:
-    assert handle_echo() == "(no arguments)"
-
-
-def test_handle_greet_with_name() -> None:
-    result = handle_greet("Alice", colors=_COLORS)
-    assert "Hello, Alice!" in result
-
-
-def test_handle_greet_without_name_raises() -> None:
-    with pytest.raises(ValueError, match="name is required"):
-        handle_greet(colors=_COLORS)
-
-
 def test_handle_quit_returns_farewell() -> None:
     assert "Good bye!" in handle_quit(colors=_COLORS)
 
@@ -51,5 +29,6 @@ def test_handle_help_lists_all_commands() -> None:
     assert "Available commands:" in result
     assert "help" in result
     assert "quit" in result
-    assert "Show available commands." in result
-    assert "Exit the assistant bot." in result
+    assert "hello" in result
+    assert "add" in result
+    assert "add-note" in result

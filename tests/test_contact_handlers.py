@@ -2,6 +2,7 @@
 
 import pytest
 
+from cli.errors import UsageError
 from handlers.contact_handlers import (
     handle_add_birthday,
     handle_add_contact,
@@ -49,11 +50,11 @@ class TestAddContact:
         )
 
     def test_no_args_raises(self) -> None:
-        with pytest.raises(ValueError, match="name and phone"):
+        with pytest.raises(UsageError, match="name and phone"):
             handle_add_contact(book=AddressBook())
 
     def test_one_arg_raises(self) -> None:
-        with pytest.raises(ValueError, match="name and phone"):
+        with pytest.raises(UsageError, match="name and phone"):
             handle_add_contact("Alice", book=AddressBook())
 
 
@@ -66,7 +67,7 @@ class TestDeleteContact:
         assert handle_delete_contact("Nobody", book=book) == "Contact not found."
 
     def test_no_args_raises(self) -> None:
-        with pytest.raises(ValueError, match="name is required"):
+        with pytest.raises(UsageError, match="name is required"):
             handle_delete_contact(book=AddressBook())
 
 
@@ -81,7 +82,7 @@ class TestChangePhone:
         assert result == "Contact not found."
 
     def test_not_enough_args(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises(UsageError):
             handle_change_phone("Alice", "0501234567", book=AddressBook())
 
 
@@ -120,7 +121,7 @@ class TestShowAll:
         assert handle_show_all(book=AddressBook()) == "No contacts saved."
 
     def test_with_args_raises(self, book: AddressBook) -> None:
-        with pytest.raises(ValueError, match="no arguments expected"):
+        with pytest.raises(UsageError, match="no arguments expected"):
             handle_show_all("extra", book=book)
 
 
@@ -189,5 +190,5 @@ class TestBirthdays:
         assert handle_birthdays(book=book) == "No birthdays in the next 7 days."
 
     def test_with_args_raises(self) -> None:
-        with pytest.raises(ValueError, match="no arguments expected"):
+        with pytest.raises(UsageError, match="no arguments expected"):
             handle_birthdays("x", book=AddressBook())

@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 from cli.colors import ColorScheme
 from cli.commands import handle_help, handle_quit
+from cli.errors import UsageError
 
 
 def run_repl(
@@ -61,9 +62,12 @@ def run_repl(
 
         try:
             result = handler(*parts[1:])
-        except ValueError as exc:
-            print(f"\n  {colors.ERROR}Invalid input: {exc}{colors.RESET}")
+        except UsageError as exc:
+            print(f"\n  {colors.ERROR}{exc}{colors.RESET}")
             print(f"  {colors.USAGE}{handler.__doc__}{colors.RESET}\n")
+            continue
+        except ValueError as exc:
+            print(f"\n  {colors.ERROR}Error: {exc}{colors.RESET}\n")
             continue
 
         print(f"\n{result}\n")
