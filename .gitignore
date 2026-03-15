@@ -22,5 +22,8 @@ build/
 dist/
 *.egg-info/
 
+# Runtime data
+*.json
+
 # OS / IDE
 .DS_Store
