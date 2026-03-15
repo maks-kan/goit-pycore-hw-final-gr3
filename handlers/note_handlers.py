@@ -3,9 +3,26 @@ from cli.errors import AlreadyExistsError, NotFoundError, UsageError
 from models.notebook import NoteBook
 
 
-def _format_note(note) -> str:
-    """Форматує одну нотатку для зручного відображення."""
-    return repr(note)
+def _format_notes_table(notes: list) -> str:
+    """Format a list of notes as an aligned table."""
+    rows = []
+    for note in notes:
+        tags = ", ".join(note.tags) if note.tags else ""
+        rows.append((note.title, note.text, tags))
+
+    headers = ("Title", "Text", "Tags")
+    widths = [len(h) for h in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], len(cell))
+
+    def fmt(cells: tuple[str, ...]) -> str:
+        return "  ".join(cell.ljust(widths[i]) for i, cell in enumerate(cells)).rstrip()
+
+    sep = "  ".join("─" * w for w in widths)
+    lines = [fmt(headers), sep]
+    lines.extend(fmt(row) for row in rows)
+    return "\n".join(lines)
 
 
 @command("Add a note. Usage: add-note <title> <text...>")
@@ -147,9 +164,7 @@ def handle_search_notes(*args: str, notebook: NoteBook) -> str:
 
     if not results:
         return "No notes found."
-
-    lines = [f"  {i}. {_format_note(note)}" for i, note in enumerate(results, 1)]
-    return "\n".join(lines)
+    return _format_notes_table(results)
 
 
 @command("Show all notes.")
@@ -162,6 +177,4 @@ def handle_show_all_notes(*args: str, notebook: NoteBook) -> str:
 
     if len(notebook) == 0:
         return "No notes saved."
-
-    lines = [f"  {i}. {_format_note(note)}" for i, note in enumerate(notebook.notes, 1)]
-    return "\n".join(lines)
+    return _format_notes_table(notebook.notes)

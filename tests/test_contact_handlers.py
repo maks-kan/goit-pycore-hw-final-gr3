@@ -114,6 +114,9 @@ class TestShowAll:
     def test_lists_contacts(self, book: AddressBook) -> None:
         result = handle_show_all(book=book)
         assert "Alice" in result
+        lines = result.splitlines()
+        assert lines[0].startswith("Name")
+        assert "─" in lines[1]
 
     def test_empty_book(self) -> None:
         assert handle_show_all(book=AddressBook()) == "No contacts saved."

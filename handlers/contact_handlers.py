@@ -4,6 +4,30 @@ from models.address_book import AddressBook
 from models.record import Record
 
 
+def _format_contacts_table(records: list[Record]) -> str:
+    """Format a list of records as an aligned table."""
+    rows = []
+    for r in records:
+        phones = ", ".join(p.value for p in r.phones) if r.phones else ""
+        email = r.email.value if r.email else ""
+        bday = r.birthday.value.strftime("%d.%m.%Y") if r.birthday else ""
+        rows.append((r.name.value, phones, email, bday))
+
+    headers = ("Name", "Phones", "Email", "Birthday")
+    widths = [len(h) for h in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], len(cell))
+
+    def fmt(cells: tuple[str, ...]) -> str:
+        return "  ".join(cell.ljust(widths[i]) for i, cell in enumerate(cells)).rstrip()
+
+    sep = "  ".join("─" * w for w in widths)
+    lines = [fmt(headers), sep]
+    lines.extend(fmt(row) for row in rows)
+    return "\n".join(lines)
+
+
 @command("Greet the bot.")
 def handle_hello(*args: str) -> str:
     return "How can I help you?"
@@ -81,7 +105,7 @@ def handle_show_all(*args: str, book: AddressBook) -> str:
     records = book.list_all()
     if not records:
         return "No contacts saved."
-    return "\n".join(str(r) for r in records)
+    return _format_contacts_table(records)
 
 
 @command("Set birthday. Usage: add-birthday <name> <DD.MM.YYYY>")
@@ -190,7 +214,7 @@ def handle_search(*args: str, book: AddressBook) -> str:
     results = book.search(args[0])
     if not results:
         return "No contacts found."
-    return "\n".join(str(r) for r in results)
+    return _format_contacts_table(results)
 
 
 @command("Show upcoming birthdays (next 7 days).")

@@ -156,8 +156,9 @@ class TestShowAllNotes:
         result = handle_show_all_notes(notebook=nb)
         assert "Shopping" in result
         assert "Work" in result
-        assert "1." in result
-        assert "2." in result
+        lines = result.splitlines()
+        assert lines[0].startswith("Title")
+        assert "─" in lines[1]
 
     def test_empty_notebook(self) -> None:
         assert handle_show_all_notes(notebook=NoteBook()) == "No notes saved."
