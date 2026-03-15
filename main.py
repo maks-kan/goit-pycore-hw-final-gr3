@@ -32,6 +32,8 @@ from handlers.note_handlers import (
     handle_edit_note,
     handle_search_notes,
     handle_show_all_notes,
+    handle_add_tags,
+    handle_remove_tag
 )
 from models.address_book import AddressBook
 from models.notebook import NoteBook
@@ -114,17 +116,17 @@ def bootstrap_commands(
         "add": _bind(handle_add_contact, book=book),
         "delete": _bind(handle_delete_contact, book=book),
         "change-phone": _bind(handle_change_phone, book=book),
-        "remove-phone": _bind(handle_remove_phone, book=book),
+        "delete-phone": _bind(handle_remove_phone, book=book),
         "phone": _bind(handle_show_phone, book=book),
         "all": _bind(handle_show_all, book=book),
         "add-birthday": _bind(handle_add_birthday, book=book),
         "show-birthday": _bind(handle_show_birthday, book=book),
         "change-birthday": _bind(handle_change_birthday, book=book),
-        "remove-birthday": _bind(handle_remove_birthday, book=book),
+        "delete-birthday": _bind(handle_remove_birthday, book=book),
         "add-email": _bind(handle_add_email, book=book),
         "show-email": _bind(handle_show_email, book=book),
         "change-email": _bind(handle_change_email, book=book),
-        "remove-email": _bind(handle_remove_email, book=book),
+        "delete-email": _bind(handle_remove_email, book=book),
         "search": _bind(handle_search, book=book),
         "birthdays": _bind(handle_birthdays, book=book),
         # Note commands
@@ -133,6 +135,9 @@ def bootstrap_commands(
         "edit-note": _bind(handle_edit_note, notebook=notebook),
         "search-notes": _bind(handle_search_notes, notebook=notebook),
         "all-notes": _bind(handle_show_all_notes, notebook=notebook),
+        "add-tags": _bind(handle_add_tags, notebook=notebook),
+        "delete-tags": _bind(handle_remove_tag, notebook=notebook),
+
     }
 
 
