@@ -1,16 +1,18 @@
 [
     {
-        "text": "Call Alice today",
-        "tags": [
-            "calls",
-            "friends"
-        ]
+        "text": [],
+        "tags": []
     },
     {
-        "text": "Прочитати книгу з Python",
-        "tags": [
-            "навчання",
-            "Python"
-        ]
+        "text": [],
+        "tags": []
+    },
+    {
+        "text": [],
+        "tags": []
+    },
+    {
+        "text": "test note",
+        "tags": []
     }
 ]

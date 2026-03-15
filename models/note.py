@@ -1,34 +1,75 @@
-class Note:
-    """Клас Note представляє одну нотатку з текстом і тегами."""
+import re
 
-    def __init__(self, text: str, tags: list[str] = None):
+
+class Note:
+    """Клас Note представляє одну нотатку з назвою, текстом і тегами."""
+
+    TAG_PATTERN = re.compile(r"^[A-Za-zА-Яа-яЁёІіЇїЄє]+$")
+
+    def __init__(self, title: str, text: str, tags: str | None = None):
         """
         Створює нову нотатку.
+
+        :param title: Назва нотатки.
         :param text: Текст нотатки.
-        :param tags: Список тегів (необов'язковий, за замовчуванням порожній).
+        :param tags: Рядок тегів через пробіл (необов'язковий).
         """
-        self.text = text  # Зберігаємо текст нотатки
-        self.tags = (
-            tags if tags is not None else []
-        )  # Зберігаємо список тегів (або порожній список)
+        self.title = title
+        self.text = text
+        self.tags: list[str] = []
+
+        if tags:
+            self.add_tags(tags)
+
+    def add_tags(self, tags: str) -> None:
+        """
+        Додає один або кілька тегів до нотатки.
+
+        Теги передаються рядком через пробіл:
+        "work urgent idea"
+
+        Кожен тег має містити лише літери.
+        Дублікати не додаються.
+        """
+        for tag in tags.split():
+            if not self.TAG_PATTERN.fullmatch(tag):
+                raise ValueError(f"Invalid tag: {tag}")
+
+            if tag not in self.tags:
+                self.tags.append(tag)
+
+    def remove_tag(self, tag: str) -> bool:
+        """
+        Видаляє тег із нотатки.
+
+        Повертає True, якщо тег знайдено і видалено,
+        і False, якщо такого тегу немає.
+        """
+        if tag in self.tags:
+            self.tags.remove(tag)
+            return True
+        return False
 
     def matches(self, keyword: str) -> bool:
         """
-        Перевіряє, чи містить нотатка задане ключове слово.
-        Повертає True, якщо keyword є підрядком у тексті нотатки
-        або входить в будь-який з тегів.
+        Перевіряє, чи містить нотатка задане ключове слово
+        у назві, тексті або тегах.
         """
-        # Пошук ключового слова у тексті або серед тегів (без врахування регістру)
         keyword_lower = keyword.lower()
-        text_lower = self.text.lower()
-        if keyword_lower in text_lower:
+
+        if keyword_lower in self.title.lower():
             return True
-        # Перевіряємо кожен тег (також у нижньому регістрі для коректного порівняння)
+
+        if keyword_lower in self.text.lower():
+            return True
+
         for tag in self.tags:
             if keyword_lower in tag.lower():
                 return True
+
         return False
 
     def __repr__(self) -> str:
-        """Повертає рядкове представлення нотатки для зручного відображення."""
-        return f"Note(text={self.text!r}, tags={self.tags!r})"
+        """Повертає зручне рядкове представлення нотатки."""
+        tags_str = ", ".join(self.tags) if self.tags else "no tags"
+        return f"Title: {self.title} | Text: {self.text} | Tags: {tags_str}"
