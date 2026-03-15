@@ -22,7 +22,7 @@ class AddressBook:
         if name in self.records:
             del self.records[name]
         else:
-            raise ValueError("Контакт не знайдено")
+            raise ValueError("Contact not found")
 
     def search(self, query):
         """Пошук контактів за підрядком (в імені, телефоні або email)."""

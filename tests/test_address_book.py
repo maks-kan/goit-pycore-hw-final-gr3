@@ -44,7 +44,7 @@ class TestDeleteRecord:
         assert book.get_record("Bob") is not None
 
     def test_delete_missing_raises(self, book: AddressBook) -> None:
-        with pytest.raises(ValueError, match="не знайдено"):
+        with pytest.raises(ValueError, match="not found"):
             book.delete_record("Eve")
 
 

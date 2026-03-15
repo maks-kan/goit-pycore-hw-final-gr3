@@ -52,7 +52,7 @@ class TestRecordPhones:
 
     def test_remove_missing_phone_raises(self) -> None:
         rec = Record("Alice")
-        with pytest.raises(ValueError, match="не знайдено"):
+        with pytest.raises(ValueError, match="not found"):
             rec.remove_phone("0501234567")
 
     def test_edit_phone(self) -> None:
@@ -72,7 +72,7 @@ class TestRecordPhones:
 
     def test_edit_missing_phone_raises(self) -> None:
         rec = Record("Alice")
-        with pytest.raises(ValueError, match="не знайдено"):
+        with pytest.raises(ValueError, match="not found"):
             rec.edit_phone("0501234567", "0509999999")
 
 
@@ -128,7 +128,7 @@ class TestRecordStr:
     def test_str_minimal(self) -> None:
         result = str(Record("Alice"))
         assert "Alice" in result
-        assert "немає телефонів" in result
+        assert "no phones" in result
 
     def test_str_with_phone(self) -> None:
         result = str(Record("Alice", phones=["0501234567"]))

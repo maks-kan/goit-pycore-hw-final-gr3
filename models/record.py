@@ -32,7 +32,7 @@ class Record:
                 self.phones.remove(p)
                 return True
         # Якщо номер не знайдено, генеруємо помилку
-        raise ValueError("Номер телефону не знайдено")
+        raise ValueError("Phone number not found")
 
     def edit_phone(self, old_number, new_number):
         """Замінити існуючий номер old_number на new_number."""
@@ -44,7 +44,7 @@ class Record:
                 removed = True
                 break
         if not removed:
-            raise ValueError(f"Номер {old_number} не знайдено")
+            raise ValueError(f"Phone number {old_number} not found")
         # Додаємо новий номер
         self.add_phone(new_number)
 
@@ -79,9 +79,7 @@ class Record:
 
     def __str__(self):
         phones_str = (
-            ", ".join(p.value for p in self.phones)
-            if self.phones
-            else "немає телефонів"
+            ", ".join(p.value for p in self.phones) if self.phones else "no phones"
         )
         email_str = f", Email: {self.email.value}" if self.email else ""
         bday_str = (
@@ -89,4 +87,4 @@ class Record:
             if self.birthday
             else ""
         )
-        return f"{self.name.value}: Телефони: {phones_str}{email_str}{bday_str}"
+        return f"{self.name.value}: Phones: {phones_str}{email_str}{bday_str}"

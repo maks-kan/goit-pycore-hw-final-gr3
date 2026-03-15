@@ -18,11 +18,11 @@ class TestName:
         assert Name("Alice").value == "Alice"
 
     def test_empty_name_raises(self) -> None:
-        with pytest.raises(ValueError, match="порожнім"):
+        with pytest.raises(ValueError, match="empty"):
             Name("")
 
     def test_none_name_raises(self) -> None:
-        with pytest.raises(ValueError, match="порожнім"):
+        with pytest.raises(ValueError, match="empty"):
             Name(None)
 
 
@@ -35,15 +35,15 @@ class TestPhone:
             Phone("")
 
     def test_non_digits_raises(self) -> None:
-        with pytest.raises(ValueError, match="цифри"):
+        with pytest.raises(ValueError, match="digits"):
             Phone("050-123-45")
 
     def test_short_number_raises(self) -> None:
-        with pytest.raises(ValueError, match="10 цифр"):
+        with pytest.raises(ValueError, match="10 digits"):
             Phone("12345")
 
     def test_long_number_raises(self) -> None:
-        with pytest.raises(ValueError, match="10 цифр"):
+        with pytest.raises(ValueError, match="10 digits"):
             Phone("12345678901")
 
     def test_setter_validates(self) -> None:
@@ -84,9 +84,9 @@ class TestBirthday:
         assert bday.value == date(1990, 3, 15)
 
     def test_invalid_format_raises(self) -> None:
-        with pytest.raises(ValueError, match="ДД.ММ.РРРР"):
+        with pytest.raises(ValueError, match="DD.MM.YYYY"):
             Birthday("1990-03-15")
 
     def test_nonsense_raises(self) -> None:
-        with pytest.raises(ValueError, match="ДД.ММ.РРРР"):
+        with pytest.raises(ValueError, match="DD.MM.YYYY"):
             Birthday("not-a-date")

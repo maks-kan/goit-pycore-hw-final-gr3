@@ -23,7 +23,7 @@ class Name(Field):
     @Field.value.setter
     def value(self, value):
         if not value:
-            raise ValueError("Ім'я не може бути порожнім")
+            raise ValueError("Name cannot be empty")
         self._value = value
 
 
@@ -33,9 +33,9 @@ class Phone(Field):
     @Field.value.setter
     def value(self, value):
         if not value.isdigit():
-            raise ValueError("Номер телефону має містити лише цифри")
+            raise ValueError("Phone number must contain only digits")
         if len(value) != 10:
-            raise ValueError("Номер телефону має містити рівно 10 цифр")
+            raise ValueError("Phone number must be exactly 10 digits")
         self._value = value
         # Після успішної валідації зберігаємо номер
 
@@ -47,7 +47,7 @@ class Email(Field):
     def value(self, value):
         # Проста перевірка наявності '@' у рядку (не на початку чи в кінці)
         if value.count("@") != 1 or value.startswith("@") or value.endswith("@"):
-            raise ValueError("Некоректна email-адреса")
+            raise ValueError("Invalid email address")
         self._value = value
 
 
@@ -59,6 +59,6 @@ class Birthday(Field):
         try:
             parsed_date = datetime.strptime(value, "%d.%m.%Y")
         except ValueError:
-            raise ValueError("Дата народження має бути у форматі ДД.ММ.РРРР")
+            raise ValueError("Birthday must be in DD.MM.YYYY format")
         # Зберігаємо лише дату (без часу)
         self._value = parsed_date.date()
