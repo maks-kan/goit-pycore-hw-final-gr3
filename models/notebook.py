@@ -2,18 +2,20 @@ from models.note import Note
 
 
 class NoteBook:
-    """Керує списком нотаток: додавання, пошук, редагування, видалення."""
+    """Керує колекцією нотаток: додавання, пошук, редагування, видалення."""
 
-    def __init__(self):
-        """Ініціалізує записник порожнім списком нотаток."""
-        self.notes: list[Note] = []
+    def __init__(self) -> None:
+        """Ініціалізує записник порожнім словником нотаток."""
+        self._notes: dict[str, Note] = {}
+
+    @property
+    def notes(self) -> list[Note]:
+        """Повертає список усіх нотаток (для зворотної сумісності)."""
+        return list(self._notes.values())
 
     def find_note_by_title(self, title: str) -> Note | None:
         """Повертає нотатку за назвою або None, якщо нотатку не знайдено."""
-        for note in self.notes:
-            if note.title == title:
-                return note
-        return None
+        return self._notes.get(title)
 
     def add_note(self, title: str, text: str, tags: str | None = None) -> bool:
         """
@@ -23,11 +25,10 @@ class NoteBook:
             True  - якщо нотатку успішно додано
             False - якщо нотатка з такою назвою вже існує
         """
-        if self.find_note_by_title(title) is not None:
+        if title in self._notes:
             return False
 
-        new_note = Note(title, text, tags)
-        self.notes.append(new_note)
+        self._notes[title] = Note(title, text, tags)
         return True
 
     def delete_note(self, title: str) -> bool:
@@ -38,11 +39,10 @@ class NoteBook:
             True  - якщо нотатку успішно видалено
             False - якщо нотатку не знайдено
         """
-        note = self.find_note_by_title(title)
-        if note is None:
+        if title not in self._notes:
             return False
 
-        self.notes.remove(note)
+        del self._notes[title]
         return True
 
     def edit_note(
@@ -64,15 +64,16 @@ class NoteBook:
             True  - якщо нотатку успішно оновлено
             False - якщо нотатку не знайдено або нова назва вже зайнята
         """
-        note = self.find_note_by_title(title)
+        note = self._notes.get(title)
         if note is None:
             return False
 
         if new_title is not None and new_title != title:
-            existing_note = self.find_note_by_title(new_title)
-            if existing_note is not None:
+            if new_title in self._notes:
                 return False
+            del self._notes[title]
             note.title = new_title
+            self._notes[new_title] = note
 
         if new_text is not None:
             note.text = new_text
@@ -87,14 +88,8 @@ class NoteBook:
         Шукає нотатки за ключовим словом у назві, тексті або тегах.
         Повертає список знайдених нотаток.
         """
-        result = []
-
-        for note in self.notes:
-            if note.matches(keyword):
-                result.append(note)
-
-        return result
+        return [note for note in self._notes.values() if note.matches(keyword)]
 
     def __len__(self) -> int:
         """Повертає кількість нотаток у записнику."""
-        return len(self.notes)
+        return len(self._notes)

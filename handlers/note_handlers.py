@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from cli.colors import ColorScheme
 from cli.commands import command
 from cli.errors import AlreadyExistsError, NotFoundError, UsageError
@@ -166,7 +168,69 @@ def handle_search_notes(*args: str, notebook: NoteBook, colors: ColorScheme) -> 
 
     if not results:
         return f"{colors.SUCCESS}No notes found.{colors.RESET}"
+    results.sort(key=lambda n: n.title.lower())
     return _format_notes_table(results, colors)
+
+
+@command("Show all unique tags, sorted alphabetically.")
+def handle_all_tags(*args: str, notebook: NoteBook, colors: ColorScheme) -> str:
+    if args:
+        raise UsageError("no arguments expected")
+
+    tags = sorted({tag for note in notebook.notes for tag in note.tags})
+    if not tags:
+        return f"{colors.SUCCESS}No tags found.{colors.RESET}"
+    return f"{colors.SUCCESS}{', '.join(tags)}{colors.RESET}"
+
+
+@command("Show notes grouped by tag.")
+def handle_notes_by_tag(*args: str, notebook: NoteBook, colors: ColorScheme) -> str:
+    if args:
+        raise UsageError("no arguments expected")
+
+    if len(notebook) == 0:
+        return f"{colors.SUCCESS}No notes saved.{colors.RESET}"
+
+    tag_map: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    untagged: list[tuple[str, str]] = []
+    for note in notebook.notes:
+        entry = (note.title, note.text)
+        if note.tags:
+            for tag in note.tags:
+                tag_map[tag].append(entry)
+        else:
+            untagged.append(entry)
+
+    all_labels = list(tag_map) + (["untagged"] if untagged else [])
+    # Total visible width: "── label ───…" — fixed for all tags.
+    line_width = max(len(lbl) for lbl in all_labels) + 12 if all_labels else 0
+
+    def _tag_header(label: str, colored_label: str) -> str:
+        # "── " (3) + label + " " (1) + trailing "─"s
+        trail = line_width - 3 - len(label) - 1
+        sep = f"{colors.TABLE_SEP}{'─' * trail}{colors.RESET}"
+        return f"── {colored_label} {sep}"
+
+    def _note_line(title: str, text: str) -> str:
+        return f"  {colors.DATA_BRIGHT}{title}{colors.RESET}: {text}"
+
+    lines: list[str] = []
+    for tag in sorted(tag_map):
+        if lines:
+            lines.append("")
+        lines.append(_tag_header(tag, f"{colors.HEADER}{tag}{colors.RESET}"))
+        for title, text in sorted(tag_map[tag], key=lambda e: e[0].lower()):
+            lines.append(_note_line(title, text))
+
+    if untagged:
+        if lines:
+            lines.append("")
+        label_colored = f"{colors.TABLE_SEP}untagged{colors.RESET}"
+        lines.append(_tag_header("untagged", label_colored))
+        for title, text in sorted(untagged, key=lambda e: e[0].lower()):
+            lines.append(_note_line(title, text))
+
+    return "\n".join(lines)
 
 
 @command("Show all notes.")
@@ -179,4 +243,5 @@ def handle_show_all_notes(*args: str, notebook: NoteBook, colors: ColorScheme) -
 
     if len(notebook) == 0:
         return f"{colors.SUCCESS}No notes saved.{colors.RESET}"
-    return _format_notes_table(notebook.notes, colors)
+    notes = sorted(notebook.notes, key=lambda n: n.title.lower())
+    return _format_notes_table(notes, colors)

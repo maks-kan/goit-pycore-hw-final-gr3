@@ -93,7 +93,7 @@ class TestNoteBook:
     def test_add_note_with_tags(self) -> None:
         nb = NoteBook()
         nb.add_note("Title", "hello", tags="work urgent")
-        assert nb.notes[0].tags == ["work", "urgent"]
+        assert nb.find_note_by_title("Title").tags == ["work", "urgent"]
 
     def test_len(self, nb: NoteBook) -> None:
         assert len(nb) == 2
@@ -109,7 +109,7 @@ class TestNoteBook:
     def test_delete_note(self, nb: NoteBook) -> None:
         assert nb.delete_note("First") is True
         assert len(nb) == 1
-        assert nb.notes[0].title == "Second"
+        assert nb.find_note_by_title("Second") is not None
 
     def test_delete_note_not_found(self, nb: NoteBook) -> None:
         assert nb.delete_note("Missing") is False

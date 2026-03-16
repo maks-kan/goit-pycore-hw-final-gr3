@@ -7,8 +7,10 @@ from cli.errors import AlreadyExistsError, NotFoundError, UsageError
 from handlers.note_handlers import (
     handle_add_note,
     handle_add_tags,
+    handle_all_tags,
     handle_delete_note,
     handle_edit_note,
+    handle_notes_by_tag,
     handle_remove_tag,
     handle_rename_note,
     handle_search_notes,
@@ -155,6 +157,60 @@ class TestSearchNotes:
     def test_no_args_raises(self, colors: ColorScheme) -> None:
         with pytest.raises(UsageError, match="keyword is required"):
             handle_search_notes(notebook=NoteBook(), colors=colors)
+
+
+class TestAllTags:
+    def test_lists_tags_sorted(self, colors: ColorScheme) -> None:
+        nb = NoteBook()
+        nb.add_note("A", "text", tags="zebra alpha")
+        nb.add_note("B", "text", tags="beta alpha")
+        result = handle_all_tags(notebook=nb, colors=colors)
+        assert result == "alpha, beta, zebra"
+
+    def test_empty_notebook(self, colors: ColorScheme) -> None:
+        result = handle_all_tags(notebook=NoteBook(), colors=colors)
+        assert result == "No tags found."
+
+    def test_no_tags(self, colors: ColorScheme) -> None:
+        nb = NoteBook()
+        nb.add_note("A", "text")
+        result = handle_all_tags(notebook=nb, colors=colors)
+        assert result == "No tags found."
+
+    def test_with_args_raises(self, colors: ColorScheme) -> None:
+        with pytest.raises(UsageError, match="no arguments expected"):
+            handle_all_tags("x", notebook=NoteBook(), colors=colors)
+
+
+class TestNotesByTag:
+    def test_groups_by_tag(self, colors: ColorScheme) -> None:
+        nb = NoteBook()
+        nb.add_note("B", "b-text", tags="work")
+        nb.add_note("A", "a-text", tags="work personal")
+        nb.add_note("C", "c-text")
+        result = handle_notes_by_tag(notebook=nb, colors=colors)
+        lines = [ln for ln in result.splitlines() if ln]  # skip blank separators
+        # Tags sorted: personal, work, then untagged
+        assert "personal" in lines[0]
+        assert "A: a-text" in lines[1]
+        assert "work" in lines[2]
+        # Notes within work sorted: A, B
+        assert "A: a-text" in lines[3]
+        assert "B: b-text" in lines[4]
+        assert "untagged" in lines[5]
+        assert "C: c-text" in lines[6]
+        # All tag header lines have equal visible width
+        headers = [ln for ln in result.splitlines() if ln.startswith("──")]
+        stripped = [len(ln.strip()) for ln in headers]
+        assert len(set(stripped)) == 1
+
+    def test_empty_notebook(self, colors: ColorScheme) -> None:
+        result = handle_notes_by_tag(notebook=NoteBook(), colors=colors)
+        assert result == "No notes saved."
+
+    def test_with_args_raises(self, colors: ColorScheme) -> None:
+        with pytest.raises(UsageError, match="no arguments expected"):
+            handle_notes_by_tag("x", notebook=NoteBook(), colors=colors)
 
 
 class TestShowAllNotes:

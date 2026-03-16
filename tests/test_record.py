@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date
 
 import pytest
 
@@ -96,32 +96,35 @@ class TestRecordBirthday:
 
     def test_days_to_birthday_no_birthday(self) -> None:
         rec = Record("Alice")
-        assert rec.days_to_birthday() is None
+        assert rec.days_to_birthday(date(2026, 3, 16)) is None
 
     def test_days_to_birthday_today(self) -> None:
-        today = date.today()
-        bday_str = today.strftime("%d.%m.%Y")
-        rec = Record("Alice", birthday=bday_str)
-        assert rec.days_to_birthday() == 0
+        rec = Record("Alice", birthday="16.03.1990")
+        assert rec.days_to_birthday(date(2026, 3, 16)) == 0
 
     def test_days_to_birthday_tomorrow(self) -> None:
-        tomorrow = date.today() + timedelta(days=1)
-        bday_str = tomorrow.strftime("%d.%m.%Y")
-        rec = Record("Alice", birthday=bday_str)
-        assert rec.days_to_birthday() == 1
+        rec = Record("Alice", birthday="17.03.1990")
+        assert rec.days_to_birthday(date(2026, 3, 16)) == 1
 
     def test_days_to_birthday_yesterday_wraps_to_next_year(self) -> None:
-        yesterday = date.today() - timedelta(days=1)
-        bday_str = yesterday.strftime("%d.%m.%Y")
-        rec = Record("Alice", birthday=bday_str)
-        result = rec.days_to_birthday()
-        assert result >= 364
+        rec = Record("Alice", birthday="15.03.1990")
+        result = rec.days_to_birthday(date(2026, 3, 16))
+        assert result == 364
 
-    def test_days_to_birthday_feb_29(self) -> None:
+    def test_days_to_birthday_feb_29_in_leap_year(self) -> None:
         rec = Record("Alice", birthday="29.02.2000")
-        result = rec.days_to_birthday()
-        assert isinstance(result, int)
-        assert result >= 0
+        # 2028 is a leap year; today is 2028-01-15 → Feb 29 is 45 days away
+        assert rec.days_to_birthday(date(2028, 1, 15)) == 45
+
+    def test_days_to_birthday_feb_29_in_non_leap_year(self) -> None:
+        rec = Record("Alice", birthday="29.02.2000")
+        # 2027 is not a leap year; today is 2027-01-15 → falls back to Feb 28 = 44 days
+        assert rec.days_to_birthday(date(2027, 1, 15)) == 44
+
+    def test_days_to_birthday_feb_29_past_in_non_leap_year(self) -> None:
+        rec = Record("Alice", birthday="29.02.2000")
+        # 2027-03-01: Feb 28 already passed → next is 2028-02-29 = 365 days
+        assert rec.days_to_birthday(date(2027, 3, 1)) == 365
 
 
 class TestRecordStr:
